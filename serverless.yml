@@ -1,0 +1,45 @@
+service: process-emblue-files
+
+provider:
+  name: aws
+  runtime: python3.8
+  region: us-east-1
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - s3:getObject
+        - s3:putObject
+        - s3:putBucketPolicy
+        - states:startExecution
+      Resource: "*"
+
+
+useDotenv: true
+
+plugins:
+  - serverless-python-requirements
+  - serverless-dotenv-plugin
+
+custom:
+  pythonRequirements:
+    dockerizePip: true
+
+package:
+  individually: true
+  exclude:
+    - 'node_modules/**'
+    - 'env/**'
+    - 'package.json'
+    - 'package-lock.json'
+    - 'requirements.txt'
+  include:
+    - '*.py'
+
+functions:
+  emblue-process-reports:
+    handler: src/process_files.handler
+    events:
+      - s3:
+          bucket: emblue-csv-reports
+          event: s3:ObjectCreated:*
+          existing: true

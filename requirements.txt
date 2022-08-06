@@ -1,0 +1,13 @@
+boto3
+cffi
+cryptography
+jmespath
+psycopg2-binary
+pycparser
+python-dateutil
+python-dotenv
+six
+urllib3
+#awswrangler
+pandas
+smart_open

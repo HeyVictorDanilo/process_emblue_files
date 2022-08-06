@@ -1,0 +1,32 @@
+{
+    "Records": [
+        {
+            "eventVersion": "2.1",
+            "eventSource": "aws:s3",
+            "awsRegion": "us-east-1",
+            "eventTime": "2022-08-03T23:27:56.209Z",
+            "eventName": "ObjectCreated:Put",
+            "userIdentity": {"principalId": "AWS:AIDATMVPOY54KVKBJEYJV"},
+            "requestParameters": {"sourceIPAddress": "34.239.118.154"},
+            "responseElements": {
+                "x-amz-request-id": "MYDTAH2WNNX9DKDR",
+                "x-amz-id-2": "l/jgbc2OGmmiT Q6yFPM0iQi0xldHqh WnW6EChzTnbfPcZo/oxKcfhq6bWzDn8NOJkXkqMgHF22sfZf8bU0QoRewrA5rc0L",
+            },
+            "s3": {
+                "s3SchemaVersion": "1.0",
+                "configurationId": "process-emblue-files-dev-emblue-process-reports-68a737133cefb25bff959852b8f04754",
+                "bucket": {
+                    "name": "emblue-csv-reports",
+                    "ownerIdentity": {"principalId": "A3TBEPRW5NFGNJ"},
+                    "arn": "arn:aws:s3:::emblue-csv-reports",
+                },
+                "object": {
+                    "key": "10_ACTIVIDADDETALLEDIARIOFTP_20220802002341.csv",
+                    "size": 12030,
+                    "eTag": "b49ff7ea197260500a019d9910b383be",
+                    "sequencer": "0062EB047C2FACF218",
+                },
+            },
+        }
+    ]
+}
