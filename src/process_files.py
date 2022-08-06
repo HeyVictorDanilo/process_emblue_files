@@ -1,3 +1,8 @@
+try:
+    import unzip_requirements
+except ImportError:
+    pass
+
 import json
 import os
 from itertools import islice
