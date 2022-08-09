@@ -103,7 +103,7 @@ class ProcessFile:
     def __get_click_query(self):
         return self.build_insert_query(
             table="em_blue_click_event",
-            columns=self.__get_columns(),
+            columns=self.__get_columns(url=1),
             values=self.click_values_list
         )
 
@@ -122,16 +122,27 @@ class ProcessFile:
         )
 
     @staticmethod
-    def __get_columns():
-        return [
-            "email",
-            "sent_date",
-            "activity_date",
-            "campaign",
-            "action",
-            "url",
-            "tag",
-        ]
+    def __get_columns(url=0):
+        if url == 1:
+            return [
+                "email",
+                "sent_date",
+                "activity_date",
+                "campaign",
+                "action",
+                "url",
+                "tag",
+            ]
+        else:
+            return [
+                "email",
+                "sent_date",
+                "activity_date",
+                "campaign",
+                "action",
+                "description",
+                "tag",
+            ]
 
     @staticmethod
     def build_insert_query(table: str, columns, values) -> str:
