@@ -13,7 +13,6 @@ provider:
         - states:startExecution
       Resource: "*"
 
-
 useDotenv: true
 
 plugins:
