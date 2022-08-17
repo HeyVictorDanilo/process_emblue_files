@@ -7,10 +7,7 @@ provider:
   iamRoleStatements:
     - Effect: Allow
       Action:
-        - s3:getObject
-        - s3:putObject
-        - s3:putBucketPolicy
-        - states:startExecution
+        - "s3:*"
       Resource: "*"
 
 useDotenv: true

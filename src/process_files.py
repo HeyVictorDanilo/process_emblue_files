@@ -34,7 +34,6 @@ class ProcessFile:
             "rb",
             encoding="utf-16",
         ) as file:
-            next(file)
             while True:
                 lines = list(islice(file, 1000))
                 self.__process_lines(lines=lines)
@@ -82,47 +81,49 @@ class ProcessFile:
 
     def __handle_queries(self):
         if self.unsubscribe_values_list:
-            self.db_instance.handler(query=self.__get_unsubscribe_query())
+            self.db_instance.handler(
+                query=self.__get_unsubscribe_query(values=self.unsubscribe_values_list)
+            )
             self.unsubscribe_values_list.clear()
 
         if self.click_values_list:
-            self.db_instance.handler(query=self.__get_click_query())
+            self.db_instance.handler(query=self.__get_click_query(values=self.click_values_list))
             self.click_values_list.clear()
 
         if self.open_values_list:
-            self.db_instance.handler(query=self.__get_open_query())
+            self.db_instance.handler(query=self.__get_open_query(values=self.open_values_list))
             self.open_values_list.clear()
 
         if self.sent_values_list:
-            self.db_instance.handler(query=self.__get_sent_query())
+            self.db_instance.handler(query=self.__get_sent_query(values=self.sent_values_list))
             self.sent_values_list.clear()
 
-    def __get_unsubscribe_query(self):
+    def __get_unsubscribe_query(self, values):
         return self.build_insert_query(
             table="em_blue_unsubscribe_event",
             columns=self.__get_columns(),
-            values=self.unsubscribe_values_list
+            values=values
         )
 
-    def __get_click_query(self):
+    def __get_click_query(self, values):
         return self.build_insert_query(
             table="em_blue_link_click_event",
             columns=self.__get_columns(url=1),
-            values=self.click_values_list
+            values=values
         )
 
-    def __get_open_query(self):
+    def __get_open_query(self, values):
         return self.build_insert_query(
             table="em_blue_open_email_event",
             columns=self.__get_columns(),
-            values=self.open_values_list
+            values=values
         )
 
-    def __get_sent_query(self):
+    def __get_sent_query(self, values):
         return self.build_insert_query(
             table="em_blue_sent_email_event",
             columns=self.__get_columns(),
-            values=self.sent_values_list
+            values=values
         )
 
     @staticmethod
