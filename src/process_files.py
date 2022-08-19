@@ -8,6 +8,8 @@ import os
 from itertools import islice
 
 import boto3
+from botocore.exceptions import ClientError
+import logging
 from smart_open import smart_open
 
 from src.main_db import DBInstance
@@ -39,6 +41,20 @@ class ProcessFile:
                 self.__process_lines(lines=lines)
                 if not lines:
                     break
+            print(f"Processed file: {self.file_name}")
+        #self.__delete_csv_file()
+
+    def __delete_csv_file(self):
+        try:
+            self.client.delete_object(
+                Bucket=os.getenv("BUCKET_CSV_FILES"),
+                Key=self.file_name,
+            )
+        except ClientError as e:
+            logging.error(e)
+        else:
+            print(f"Deleted csv file: {self.file_name}")
+            logging.info("Deleted csv file")
 
     def __process_lines(self, lines):
         self.__classify_lines(lines=lines)
@@ -57,15 +73,15 @@ class ProcessFile:
 
             if line_words[6] == "Enviado":
                 self.sent_values_list.append(line_data)
-
-            if line_words[6] == "Click":
+            elif line_words[6] == "Click":
                 self.click_values_list.append(line_data)
-
-            if line_words[6] == "Abierto":
+            elif line_words[6] == "Abierto":
                 self.open_values_list.append(line_data)
-
-            if line_words[6] == "Desuscripto":
+            elif line_words[6] == "Desuscripto":
                 self.unsubscribe_values_list.append(line_data)
+            else:
+                print(line_words[6])
+
 
     @staticmethod
     def __get_line_data(line_words, tag):
@@ -80,23 +96,28 @@ class ProcessFile:
         )
 
     def __handle_queries(self):
-        if self.unsubscribe_values_list:
-            self.db_instance.handler(
-                query=self.__get_unsubscribe_query(values=self.unsubscribe_values_list)
-            )
-            self.unsubscribe_values_list.clear()
+        try:
+            if self.unsubscribe_values_list:
+                self.db_instance.handler(
+                    query=self.__get_unsubscribe_query(values=self.unsubscribe_values_list)
+                )
+                self.unsubscribe_values_list.clear()
 
-        if self.click_values_list:
-            self.db_instance.handler(query=self.__get_click_query(values=self.click_values_list))
-            self.click_values_list.clear()
+            if self.click_values_list:
+                self.db_instance.handler(query=self.__get_click_query(values=self.click_values_list))
+                self.click_values_list.clear()
 
-        if self.open_values_list:
-            self.db_instance.handler(query=self.__get_open_query(values=self.open_values_list))
-            self.open_values_list.clear()
+            if self.open_values_list:
+                self.db_instance.handler(query=self.__get_open_query(values=self.open_values_list))
+                self.open_values_list.clear()
 
-        if self.sent_values_list:
-            self.db_instance.handler(query=self.__get_sent_query(values=self.sent_values_list))
-            self.sent_values_list.clear()
+            if self.sent_values_list:
+                self.db_instance.handler(query=self.__get_sent_query(values=self.sent_values_list))
+                self.sent_values_list.clear()
+        except Exception as e:
+            raise e
+        else:
+            print("Sent queries")
 
     def __get_unsubscribe_query(self, values):
         return self.build_insert_query(
@@ -162,6 +183,12 @@ class ProcessFile:
 
 
 def handler(event, context):
-    process_file = ProcessFile(file_name=event["Records"][0]["s3"]["object"]["key"])
-    process_file.executor()
-    return {"statusCode": 200}
+    try:
+        process_file = ProcessFile(file_name=event["Records"][0]["s3"]["object"]["key"])
+        process_file.executor()
+    except Exception as e:
+        print(e)
+        logging.error(str(e))
+        return {"statusCode": 400}
+    else:
+        return {"statusCode": 200}

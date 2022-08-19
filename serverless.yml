@@ -39,3 +39,4 @@ functions:
           bucket: emblue-csv-reports
           event: s3:ObjectCreated:*
           existing: true
+    memorySize: 8192
