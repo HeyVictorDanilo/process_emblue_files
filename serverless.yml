@@ -40,3 +40,4 @@ functions:
           event: s3:ObjectCreated:*
           existing: true
     memorySize: 8192
+    timeout: 900

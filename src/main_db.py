@@ -16,10 +16,10 @@ class DBInstance:
     def __init__(self, public_key):
         self.public_key = public_key
 
-    def handler(self, query):
+    def handler(self, query, params=None):
         data_conn = self.get_conn_data()
         conn = self.make_conn(data=data_conn)
-        result = self.fetch_data(conn=conn, query=query)
+        result = self.fetch_data(conn=conn, query=query, params=params)
         return result
 
     def decrypt_fernet(self, token):
@@ -71,13 +71,18 @@ class DBInstance:
         else:
             return conn
 
-    def fetch_data(self, conn, query):
+    def fetch_data(self, conn, query, params=None):
         cursor = conn.cursor()
-        cursor.execute(query)
+        if params:
+            cursor.execute(query, params)
+        else:
+            cursor.execute(query)
+
         if cursor.description:
             result = [line for line in cursor.fetchall()]
         else:
             result = []
+
         conn.commit()
         cursor.close()
         return result
