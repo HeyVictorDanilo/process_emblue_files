@@ -44,8 +44,7 @@ class ProcessFile:
                 self.__process_lines(lines=lines)
                 if not lines:
                     break
-            #print(f"Processed file: {self.file_name}")
-        #self.__delete_csv_file()
+        self.__delete_csv_file()
 
     def __delete_csv_file(self):
         try:
@@ -56,7 +55,6 @@ class ProcessFile:
         except ClientError as e:
             logging.error(e)
         else:
-            #print(f"Deleted csv file: {self.file_name}")
             logging.info("Deleted csv file")
 
     def __process_lines(self, lines):
