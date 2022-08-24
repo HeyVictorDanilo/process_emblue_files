@@ -14,6 +14,9 @@ from smart_open import smart_open
 from psycopg2 import sql
 from src.main_db import DBInstance
 
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
 
 class ProcessFile:
     def __init__(self, file_name: str):
@@ -54,9 +57,9 @@ class ProcessFile:
                 Key=self.file_name,
             )
         except ClientError as e:
-            logging.error(e)
+            logger.error(e)
         else:
-            logging.info("Deleted csv file")
+            logger.info("Deleted csv file")
 
     def __process_lines(self, lines):
         self.__classify_lines(lines=lines)
@@ -81,7 +84,7 @@ class ProcessFile:
                 self.unsubscribe_values_list.extend(line_data)
                 self.unsubscribe_counter += 1
             else:
-                logging.info(line_words[6])
+                logger.info(line_words[6])
 
     @staticmethod
     def __get_line_data(line_words):
@@ -158,7 +161,7 @@ class ProcessFile:
         except Exception as e:
             self.__write_log(message=e, status="PROCESSING")
         else:
-            logging.info("Sent queries")
+            logger.info("Sent queries")
 
     @staticmethod
     def __get_columns(url=0):
