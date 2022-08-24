@@ -159,7 +159,7 @@ class ProcessFile:
                 self.sent_counter = 0
 
         except Exception as e:
-            self.__write_log(message=e, status="PROCESSING")
+            self.__write_log(message=e, status=1)
         else:
             logger.info("Sent queries")
 
@@ -207,7 +207,7 @@ class ProcessFile:
                     '{date.today()}',
                     '{self.__get_account_name()}',
                     '{self.file_name}',
-                    '{status}',
+                    {status},
                     '{str(message)}'
                 );
             """
