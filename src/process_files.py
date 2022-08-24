@@ -5,6 +5,7 @@ except ImportError:
 
 import os
 from itertools import islice
+from datetime import date
 
 import boto3
 from botocore.exceptions import ClientError
@@ -155,7 +156,7 @@ class ProcessFile:
                 self.sent_counter = 0
 
         except Exception as e:
-            raise e
+            self.__write_log(message=e, status="PROCESSING")
         else:
             logging.info("Sent queries")
 
@@ -193,13 +194,28 @@ class ProcessFile:
             values=sql.SQL('), (').join(values)
         )
 
+    def __get_account_name(self):
+        return self.file_name.split("_")[0]
+
+    def __write_log(self, message, status):
+        self.db_instance.handler(query=f"""
+            INSERT INTO em_blue_migration_log (date_migrated, account, file_name, status, message)
+                VALUES (
+                    '{date.today()}',
+                    '{self.__get_account_name()}',
+                    '{self.file_name}',
+                    '{status}',
+                    '{str(message)}'
+                );
+            """
+        )
+
 
 def handler(event, context):
     try:
         process_file = ProcessFile(file_name=event["Records"][0]["s3"]["object"]["key"])
         process_file.executor()
     except Exception as e:
-        logging.error(str(e))
         return {"statusCode": 400}
     else:
         return {"statusCode": 200}
