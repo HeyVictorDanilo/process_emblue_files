@@ -219,6 +219,9 @@ def handler(event, context):
         process_file = ProcessFile(file_name=event["Records"][0]["s3"]["object"]["key"])
         process_file.executor()
     except Exception as e:
-        return {"statusCode": 400}
+        return {
+            "statusCode": 400,
+            "exception": e
+        }
     else:
         return {"statusCode": 200}
