@@ -39,9 +39,9 @@ class ProcessFile:
 
     def executor(self):
         with smart_open(
-            f's3://{os.getenv("BUCKET_CSV_FILES")}/{self.file_name}',
-            "rb",
-            encoding="utf-16",
+                f's3://{os.getenv("BUCKET_CSV_FILES")}/{self.file_name}',
+                "rb",
+                encoding="utf-16",
         ) as file:
             while True:
                 lines = list(islice(file, 1000))
@@ -200,18 +200,66 @@ class ProcessFile:
     def __get_account_name(self):
         return self.file_name.split("_")[0]
 
+    def __get_account_values(self):
+        result = self.db_instance.handler(query=f"""
+            SELECT 
+                id, 
+                emb.migrate_open_email, 
+                emb.migrate_link_click, 
+                emb.migrate_unsubscribe,
+                emb.migrate_sent_email 
+            FROM 
+                em_blue 
+            WHERE 
+                emblue_user = '{self.__get_account_name()}';"""
+                            )
+        return result
+
     def __write_log(self, message, status):
-        self.db_instance.handler(query=f"""
-            INSERT INTO em_blue_migration_log (date_migrated, account, file_name, status, message)
+        account_values = self.__get_account_values()
+
+        if account_values[1]:
+            self.db_instance.handler(query=f"""
+                INSERT INTO em_blue_migration_log (date_migrated, account_id, event_migrated, status, 
+                    message, created_at
+                )
                 VALUES (
-                    '{date.today()}',
-                    '{self.__get_account_name()}',
-                    '{self.file_name}',
-                    {status},
-                    '{str(message)}'
-                );
-            """
-        )
+                    '{date.today()}', {account_values[0]}, 0, '{self.file_name}', {status}, '{str(message)}', 
+                    '{date.today()}');
+                """
+                                     )
+
+        if account_values[2]:
+            self.db_instance.handler(query=f"""
+                INSERT INTO em_blue_migration_log (date_migrated, account_id, event_migrated, status, 
+                    message, created_at
+                )
+                VALUES (
+                    '{date.today()}', {account_values[0]}, 1, '{self.file_name}', {status}, '{str(message)}', 
+                    '{date.today()}');
+                """
+                                     )
+
+        if account_values[3]:
+            self.db_instance.handler(query=f"""
+                INSERT INTO em_blue_migration_log (date_migrated, account_id, event_migrated, file_name, status, 
+                    message, created_at
+                )
+                VALUES ('{date.today()}',{account_values[0]}, 2, '{self.file_name}', {status}, '{str(message)}', 
+                    '{date.today()}');
+                """
+                                     )
+
+        if account_values[4]:
+            self.db_instance.handler(query=f"""
+                INSERT INTO em_blue_migration_log (date_migrated, account_id, event_migrated, file_name, status, 
+                    message, created_at
+                )
+                VALUES (
+                    '{date.today()}', {account_values[0]}, 3, {self.file_name}, {status}, '{str(message)}', 
+                    '{date.today()}');
+                """
+                                     )
 
 
 def handler(event, context):
@@ -219,6 +267,9 @@ def handler(event, context):
         process_file = ProcessFile(file_name=event["Records"][0]["s3"]["object"]["key"])
         process_file.executor()
     except Exception as e:
-        return {"statusCode": 400}
+        return {
+            "statusCode": 400,
+            "exception": e
+        }
     else:
         return {"statusCode": 200}
